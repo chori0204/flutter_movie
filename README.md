@@ -1,10 +1,80 @@
 # flutter_movie
 
+2. 주요 TMDB API URL 예시
+기능	엔드포인트	설명
+현재 상영중 영화	/movie/now_playing	현재 상영중인 영화 리스트
+인기 영화	/movie/popular	인기있는 영화 리스트
+평점 높은 영화	/movie/top_rated	평점이 높은 영화 리스트
+개봉 예정 영화	/movie/upcoming	곧 개봉 예정인 영화 리스트
+영화 상세 정보	/movie/{movie_id}	특정 영화 상세 정보 조회
+
+3. API 호출 시 고려 사항
+api_key 쿼리 파라미터로 발급받은 API Key를 반드시 포함해야 합니다.
+page 파라미터로 페이지네이션 가능 (1부터 시작)
+이미지 URL은 JSON 내 poster_path 등을 통해 제공되며,
+https://image.tmdb.org/t/p/w500{poster_path} 처럼 베이스 URL + 사이즈 + 경로 조합으로 이미지 불러옴
+
+## 전체 구조 
+assets/
+ ├─ config
+ │    └─.env
+lib/
+ ├─ core/
+ │    └─ config/env.dart            // 환경변수(API 키 등)
+ ├─ features/
+ │    ├─ home/
+ │    │    ├─ data/
+ │    │    │    ├─ datasources/
+ │    │    │    │     └─ movie_remote_data_source.dart
+ │    │    │    ├─ models/
+ │    │    │    │     └─ movie_model.dart
+ │    │    │    └─ repositories/
+ │    │    │          └─ movie_repository_impl.dart
+ │    │    ├─ domain/
+ │    │    │    ├─ entities/
+ │    │    │    │     └─ movie.dart
+ │    │    │    ├─ repositories/
+ │    │    │    │     └─ movie_repository.dart
+ │    │    │    └─ usecases/
+ │    │    │          ├─ get_now_playing_movies.dart
+ │    │    │          └─ get_movie_detail.dart
+ │    │    ├─ presentation/
+ │    │    │    ├─ bloc/
+ │    │    │    │     └─ home_bloc.dart
+ │    │    │    ├─ pages/
+ │    │    │    │     ├─ home_page.dart
+ │    │    │    │     └─ detail_page.dart
+ │    │    │    └─ widgets/
+ │    │    │          └─ horizontal_movie_list.dart
+ └─  main.dart
+
+
+## 레이어 구조 
+✅ 도메인 레이어
+    movie.dart, movie_detail.dart
+    movie_repository.dart
+    UseCases
+
+✅ 데이터 레이어
+    movie_model.dart, movie_detail_model.dart
+    movie_datasource.dart
+    movie_repository_impl.dart
+
+✅ 프레젠테이션 레이어
+    home_page.dart, movie_detail_page.dart
+    위젯 구성 (movie_horizontal_list_widget.dart)
+    ViewModel 또는 BLoC
+
+✅ 기타
+    .env, Env 클래스
+    main.dart
+    테스트 코드
 
 ## 설치된 패키지 
-| 목적                        | 패키지명                      | 설치 명령어                                    |
+
+| 목적                        | 패키지명                      | 설치 명령어                               |
 | ------------------------- | ------------------------- | ----------------------------------------- |
-| `.env` 파일을 읽을 수 있도록 설정 | `flutter_dotenv`            | `flutter pub add flutter_dotenv`            |
+| `.env` 파일을 읽을 수 있도록 설정 | `flutter_dotenv`            | `flutter pub add flutter_dotenv`       |
 | 클린아키텍처 <dart>            | `clean_arch_boilerplate_cli`  | `dart pub global activate clean_arch_boilerplate_cli` |
 | 클린아키텍처 <flutter>         | `flutter_clean_architecture`  | `flutter pub add flutter_clean_architecture`  |
 | BLoC 상태관리 (flutter\_bloc) | `flutter_bloc`            | `flutter pub add flutter_bloc`            |
@@ -13,13 +83,24 @@
 | HTTP 통신                   | `http`                    | `flutter pub add http`                    |
 | HTTP 통신                   | `dio`                    | `flutter pub add dio`                    |
 | JSON 직렬화/역직렬화           | `json_annotation`         | `flutter pub add json_annotation`         |
+
+<<Dev>
+| 목적                        | 패키지명                      | 설치 명령어                               |
+| ------------------------- | ------------------------- | ----------------------------------------- |
 | 코드 생성 도구 (빌드러너)        | `build_runner` (dev)      | `flutter pub add --dev build_runner`      |
 | JSON 코드 생성 라이브러리       | `json_serializable` (dev) | `flutter pub add --dev json_serializable` |
 | 테스트 프레임워크               | `flutter_test` (기본 내장)    | (별도 설치 불필요)                          |
+| 테스트 프레임워크               | `mockito` (기본 내장)    | `flutter pub add --dev mockito build_runner`  |
+| 테스트 프레임워크               | `bloc_test` (기본 내장)    | `flutter pub add --dev bloc_test`  |
+
 
 ### 패키지 관련 참고
+1.   http/dio 
     단순 GET/POST만 쓴다면 http도 충분
     인증 토큰 처리, 인터셉터, 복잡한 API 호출 많으면 dio 추천
+2. bloc_test + mockito 조합
+    - Bloc 내부에서 사용하는 useCase, repository 등을 mockito로 mock 처리해서 테스트에 사용하면 더 강력한 테스트를 만들 수 있어요
+    - blocTest()는 비동기 상태 테스트를 자동 처리해주므로 await나 pump() 없이 테스트 가능.
 
 ## 작업내용 
 0. .env 파일 
